@@ -1,0 +1,11 @@
+{
+  "name": "mikser-concat-scripts",
+  "version": "0.1.0",
+  "description": "Very simple script concatenation for Mikser",
+  "main": "index.js",
+  "dependencies": {
+    "bluebird": "^3.1.5",
+    "concat-with-sourcemaps": "^1.0.4",
+    "fs-extra-promise": "^0.3.1"
+  }
+}
