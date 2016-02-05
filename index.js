@@ -111,7 +111,7 @@ module.exports = function (mikser, context) {
 
 			context.process(() => {
 				return mikser.broker.call('mikser.plugins.concatScripts.concat', concatInfo).catch((err) => {
-					mikser.diagnostics.log(context, 'error', 'Error concatenating:', info.destination, err);
+					mikser.diagnostics.log(context, 'error', 'Error concatenating:', concatInfo.destination, err);
 				});
 			});
 			return mikser.manager.getUrl(concatInfo.destination);
