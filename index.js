@@ -5,6 +5,7 @@ let path = require('path');
 let fs = require('fs-extra-promise');
 let _ = require('lodash');
 let touch = require('touch');
+let cluster = require('cluster');
 
 module.exports = function (mikser, context) {
 	let debug = mikser.debug('concat-scripts');
@@ -110,7 +111,13 @@ module.exports = function (mikser, context) {
 			concatInfo.destination = concatInfo.sourceExt === concatInfo.destinationExt ? path.join(mikser.config.outputFolder, destination) : path.join(mikser.config.outputFolder, destination, path.basename(context.layouts[0]._id, path.extname(context.layouts[0]._id)) + '.all' + concatInfo.sourceExt);
 
 			context.process(() => {
-				return mikser.broker.call('mikser.plugins.concatScripts.concat', concatInfo).catch((err) => {
+				let concat;
+				if (cluster.isMaster) {
+					concat = mikser.plugins.concatScripts.concat(concatInfo);
+				} else {
+					concat = mikser.broker.call('mikser.plugins.concatScripts.concat', concatInfo);
+				}
+				return concat.catch((err) => {
 					mikser.diagnostics.log(context, 'error', 'Error concatenating:', concatInfo.destination, err);
 				});
 			});
