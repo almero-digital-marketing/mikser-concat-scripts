@@ -1,6 +1,6 @@
 {
   "name": "mikser-concat-scripts",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Very simple script concatenation for Mikser",
   "main": "index.js",
   "dependencies": {

@@ -41,11 +41,9 @@ module.exports = function (mikser, context) {
 				sourcemap: info.sourcemap === true ? info.sourcemap : false,
 				destination: info.destination
 			}
-			info.outDir = path.dirname(info.destination);
-			// update runtime json with new info
-			fs.writeFileSync(runtimeMap, JSON.stringify(map, null, 2));
-
 			if (mikser.manager.isNewer(info.sources, info.destination)) {
+				fs.writeFileSync(runtimeMap, JSON.stringify(map, null, 2));
+				info.outDir = path.dirname(info.destination);
 				// Lock inline file for further usage by creating it and updating its mtime;
 				fs.ensureFileSync(info.destination);
 				touch.sync(info.destination);
@@ -109,18 +107,20 @@ module.exports = function (mikser, context) {
 				sourcemap: sourcemap === true ? sourcemap : false,
 			}
 			concatInfo.destination = concatInfo.sourceExt === concatInfo.destinationExt ? path.join(mikser.config.outputFolder, destination) : path.join(mikser.config.outputFolder, destination, path.basename(context.layouts[0]._id, path.extname(context.layouts[0]._id)) + '.all' + concatInfo.sourceExt);
-
-			context.process(() => {
-				let concat;
-				if (cluster.isMaster) {
-					concat = mikser.plugins.concatScripts.concat(concatInfo);
-				} else {
-					concat = mikser.broker.call('mikser.plugins.concatScripts.concat', concatInfo);
-				}
-				return concat.catch((err) => {
-					mikser.diagnostics.log(context, 'error', 'Error concatenating:', concatInfo.destination, err);
+			
+			if (mikser.manager.isNewer(concatInfo.sources, concatInfo.destination)) {
+				context.process(() => {
+					let concat;
+					if (cluster.isMaster) {
+						concat = mikser.plugins.concatScripts.concat(concatInfo);
+					} else {
+						concat = mikser.broker.call('mikser.plugins.concatScripts.concat', concatInfo);
+					}
+					return concat.catch((err) => {
+						mikser.diagnostics.log(context, 'error', 'Error concatenating:', concatInfo.destination, err);
+					});
 				});
-			});
+			}
 			return mikser.manager.getUrl(concatInfo.destination);
 		}
 
